@@ -18,6 +18,27 @@ LIGHT_SQUARE_COLOR = (240, 217, 181)
 DARK_SQUARE_COLOR = (181, 136, 99)
 SELECTED_SQUARE_COLOR = (122, 158, 202)
 
+# Transposition table
+transposition_table = {}
+
+
+def load_piece_images():
+    piece_images = {}
+    pieces = ["p", "n", "b", "r", "q", "k"]
+    colors = ["w", "b"]
+    for piece in pieces:
+        for color in colors:
+            filename = f"images/{piece}_{color}.png"
+            image = pygame.image.load(filename)
+            image = pygame.transform.scale(image, (SQUARE_SIZE, SQUARE_SIZE))
+            piece_images[color + piece] = image
+    return piece_images
+
+
+# Load piece images
+piece_images = load_piece_images()
+
+
 def evaluate_board(board):
     # Piece weights
     piece_weights = {
@@ -63,57 +84,79 @@ def evaluate_board(board):
 
     pawn_structure_score = -0.5 * (doubled_pawns + blocked_pawns + isolated_pawns)
 
-    # Evaluate piece mobility (number of legal moves)
-    mobility_score = 0.1 * (len(list(board.legal_moves)) - len(list(board.legal_moves)))
+    # Evaluate piece mobility
+    player_legal_moves = list(board.legal_moves)
+    opponent_legal_moves = list(board.legal_moves)
+    mobility_score = 0.1 * (len(player_legal_moves) - len(opponent_legal_moves))
+
+    # Evaluate captures
+    captures_score = 0.5 * len([move for move in board.legal_moves if board.is_capture(move)])
+
+    # Evaluate king safety
+    player_king_square = board.king(chess.WHITE)
+    opponent_king_square = board.king(chess.BLACK)
+    king_safety_score = 0.0
+    if player_king_square and opponent_king_square:
+        player_king_file = chess.square_file(player_king_square)
+        player_king_rank = chess.square_rank(player_king_square)
+        opponent_king_file = chess.square_file(opponent_king_square)
+        opponent_king_rank = chess.square_rank(opponent_king_square)
+        king_distance = abs(player_king_file - opponent_king_file) + abs(player_king_rank - opponent_king_rank)
+        king_safety_score = -0.05 * king_distance
+
+    # Evaluate threatened pieces
+    threatened_pieces_score = 0.0
+    for square in chess.SQUARES:
+        piece = board.piece_at(square)
+        if piece and piece.color == board.turn:
+            if any(move.to_square == square and board.is_capture(move) for move in opponent_legal_moves):
+                threatened_pieces_score -= piece_weights.get(piece.piece_type, 0)
 
     # Calculate the total score
-    total_score = (material_score + pawn_structure_score + mobility_score) * board.turn
+    total_score = (material_score + pawn_structure_score + mobility_score + captures_score
+                   + king_safety_score + threatened_pieces_score) * board.turn
 
     return total_score
 
 
-def minimax(board, depth, alpha, beta, maximizing_player):
+def alphabeta(board, depth, alpha, beta, maximizing_player):
+    # Check if the current position is already evaluated
+    key = (board.board_fen(), depth)
+    if key in transposition_table:
+        return transposition_table[key]
+
     if depth == 0 or board.is_game_over():
         # If the maximum depth is reached or the game is over, evaluate the board and return its score
-        return evaluate_board(board)
+        score = evaluate_board(board)
+        transposition_table[key] = score
+        return score
 
     if maximizing_player:
         max_eval = float('-inf')
         for move in board.legal_moves:
             board.push(move)
-            eval_score = minimax(board, depth - 1, alpha, beta, False)
+            eval_score = alphabeta(board, depth - 1, alpha, beta, False)
             board.pop()
             max_eval = max(max_eval, eval_score)
             alpha = max(alpha, eval_score)
             if beta <= alpha:
                 # Beta cutoff
                 break
+        transposition_table[key] = max_eval
         return max_eval
     else:
         min_eval = float('inf')
         for move in board.legal_moves:
             board.push(move)
-            eval_score = minimax(board, depth - 1, alpha, beta, True)
+            eval_score = alphabeta(board, depth - 1, alpha, beta, True)
             board.pop()
             min_eval = min(min_eval, eval_score)
             beta = min(beta, eval_score)
             if beta <= alpha:
                 # Alpha cutoff
                 break
+        transposition_table[key] = min_eval
         return min_eval
-
-
-def find_best_move(board, depth):
-    best_eval = float('-inf')
-    best_move = None
-    for move in board.legal_moves:
-        board.push(move)
-        eval_score = minimax(board, depth - 1, float('-inf'), float('inf'), False)
-        board.pop()
-        if eval_score > best_eval:
-            best_eval = eval_score
-            best_move = move
-    return best_move
 
 
 def determine_best_move(board_state, depth):
@@ -175,6 +218,21 @@ def create_board_ui(root):
             board_buttons[square] = button
 
 
+def find_best_move(board, depth):
+    best_eval = float('-inf')
+    best_move = None
+
+    for current_depth in range(1, depth + 1):
+        for move in board.legal_moves:
+            board.push(move)
+            eval_score = alphabeta(board, current_depth - 1, alpha=float('-inf'), beta=float('inf'), maximizing_player=False)
+            board.pop()
+            if eval_score > best_eval:
+                best_eval = eval_score
+                best_move = move
+
+    return best_move
+
 def play_as_white(depth):
     global board, player_color
     player_color = chess.WHITE
@@ -184,7 +242,6 @@ def play_as_white(depth):
     create_board_ui(root)
     refresh_board()
     root.mainloop()
-
 
 def play_as_black(depth):
     global board, player_color
@@ -198,7 +255,6 @@ def play_as_black(depth):
         make_ai_move()  # AI makes the first move as Black
     root.mainloop()
 
-
 def play_random_color(depth):
     if random.choice([True, False]):
         play_as_white(depth)
@@ -207,7 +263,7 @@ def play_random_color(depth):
 
 
 def play_chess(depth):
-    global board, player_color
+    global board, player_color, selected_square
     pygame.init()
     screen = pygame.display.set_mode((BOARD_WIDTH, BOARD_HEIGHT))
     clock = pygame.time.Clock()
@@ -256,6 +312,16 @@ def play_chess(depth):
                 (7 - chess.square_rank(selected_square_pos)) * SQUARE_SIZE,
                 SQUARE_SIZE, SQUARE_SIZE))
 
+        for row in range(8):
+            for col in range(8):
+                square = chess.square(col, 7 - row)
+                color = LIGHT_SQUARE_COLOR if (row + col) % 2 == 0 else DARK_SQUARE_COLOR
+                piece = board.piece_at(square)
+                if piece:
+                    piece_image = piece_images[piece.symbol()]
+                    screen.blit(piece_image, (col * SQUARE_SIZE, row * SQUARE_SIZE))
+                pygame.draw.rect(screen, color, (col * SQUARE_SIZE, row * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
+
         pygame.display.flip()
         clock.tick(60)
 
@@ -263,7 +329,7 @@ def play_chess(depth):
 
 
 # Example usage
-depth = 3  # Specify the desired depth for the AI
+depth = 4  # Specify the desired depth for the AI
 
 # Play as White
 play_as_white(depth)
