@@ -118,6 +118,30 @@ def evaluate_board(board):
 
     return total_score
 
+def quiescence_search(board, alpha, beta, depth):
+    stand_pat = evaluate_board(board)
+    if depth == 0 or board.is_game_over():
+        return stand_pat
+
+    if stand_pat >= beta:
+        return beta
+
+    if alpha < stand_pat:
+        alpha = stand_pat
+
+    for move in board.legal_moves:
+        if board.is_capture(move):
+            board.push(move)
+            score = -quiescence_search(board, -beta, -alpha, depth - 1)
+            board.pop()
+
+            if score >= beta:
+                return beta
+
+            if score > alpha:
+                alpha = score
+
+    return alpha
 
 def alphabeta(board, depth, alpha, beta, maximizing_player):
     # Check if the current position is already evaluated
@@ -131,6 +155,9 @@ def alphabeta(board, depth, alpha, beta, maximizing_player):
         transposition_table[key] = score
         return score
 
+    if depth <= 0:
+        return quiescence_search(board, alpha, beta, depth)
+
     if maximizing_player:
         max_eval = float('-inf')
         for move in board.legal_moves:
@@ -142,7 +169,6 @@ def alphabeta(board, depth, alpha, beta, maximizing_player):
             if beta <= alpha:
                 # Beta cutoff
                 break
-        transposition_table[key] = max_eval
         return max_eval
     else:
         min_eval = float('inf')
@@ -155,7 +181,6 @@ def alphabeta(board, depth, alpha, beta, maximizing_player):
             if beta <= alpha:
                 # Alpha cutoff
                 break
-        transposition_table[key] = min_eval
         return min_eval
 
 
