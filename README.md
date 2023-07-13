@@ -8,21 +8,25 @@ Several improvements have also been implemented, including Alpha-Beta pruning, t
 
 ![chess-bot](https://github.com/DanielT504/AI-Chess-Bot/assets/62156098/739c55d3-dd72-46ca-be57-dd1eba5d5dc9)
 
-Alpha-Beta pruning reduces the number of evaluated nodes by eliminating branches that are guaranteed to lead to worse scores.
+---------------------------------------
 
-The transposition table stores evaluated board positions and their scores. This helps to avoid redundant computations.
+ - Alpha-Beta pruning reduces the number of evaluated nodes by eliminating branches that are guaranteed to lead to worse scores.
 
-Iterative deepening progressively explores deeper levels of the search tree, providing results for shallower depths and allowing timely responses.
+ - The transposition table stores evaluated board positions and their scores. This helps to avoid redundant computations.
 
-The quiescence search focuses on capturing moves and forcing moves to prevent the AI from making shallow evaluations and missing important tactics or threats.
+ - Iterative deepening progressively explores deeper levels of the search tree, providing results for shallower depths and allowing timely responses.
 
-The aspiration window search dynamically adjusts the search window based on previous search results, narrowing down the search while still finding the best move.
+ - The quiescence search focuses on capturing moves and forcing moves to prevent the AI from making shallow evaluations and missing important tactics or threats.
 
-Move ordering is based on capturing moves, promotion moves, check moves, and non-capture/non-promotion moves, in that priority order.
+ - The aspiration window search dynamically adjusts the search window based on previous search results, narrowing down the search while still finding the best move.
 
-Late move reduction reduces the depth of search for non-capturing moves to save computation time, performing a full search only if necessary.
+ - Move ordering is based on capturing moves, promotion moves, check moves, and non-capture/non-promotion moves, in that priority order.
 
+ - Late move reduction reduces the depth of search for non-capturing moves to save computation time, performing a full search only if necessary.
 
+---------------------------------------
+
+#Instructions
 To play as white, black, or a random color, comment out the other two calls at the bottom of the file. In the same spot, you can also change the depth of the minimax tree in constants.py, which will improve the opponent performance but exponentially increase the calculation time (recommended no more than 5).
 
 If you want to integrate the chess AI into your own project, you can use the `determine_best_move` function to get the AI's best move for a given board state and depth. The board state should be a valid FEN string representing the current board position. For example:
@@ -32,6 +36,7 @@ depth = 2  # Specify the desired depth for the AI
 best_move = determine_best_move(board_state, depth)
 print("Best move:", best_move)
 
+---------------------------------------
 
 TODO:
 
