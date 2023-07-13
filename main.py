@@ -159,29 +159,25 @@ def alphabeta(board, depth, alpha, beta, maximizing_player):
         return quiescence_search(board, alpha, beta, depth)
 
     if maximizing_player:
-        max_eval = float('-inf')
         for move in board.legal_moves:
             board.push(move)
             eval_score = alphabeta(board, depth - 1, alpha, beta, False)
             board.pop()
-            max_eval = max(max_eval, eval_score)
-            alpha = max(alpha, eval_score)
-            if beta <= alpha:
-                # Beta cutoff
-                break
-        return max_eval
+            if eval_score >= beta:
+                return beta
+            if eval_score > alpha:
+                alpha = eval_score
+        return alpha
     else:
-        min_eval = float('inf')
         for move in board.legal_moves:
             board.push(move)
             eval_score = alphabeta(board, depth - 1, alpha, beta, True)
             board.pop()
-            min_eval = min(min_eval, eval_score)
-            beta = min(beta, eval_score)
-            if beta <= alpha:
-                # Alpha cutoff
-                break
-        return min_eval
+            if eval_score <= alpha:
+                return alpha
+            if eval_score < beta:
+                beta = eval_score
+        return beta
 
 
 def determine_best_move(board_state, depth):
@@ -243,14 +239,22 @@ def create_board_ui(root):
             board_buttons[square] = button
 
 
-def find_best_move(board, depth):
+def find_best_move(board, depth, aspiration_window=100):
     best_eval = float('-inf')
     best_move = None
 
     for current_depth in range(1, depth + 1):
+        if best_move is not None:
+            # Narrow the aspiration window around the previous best move
+            alpha = best_eval - aspiration_window
+            beta = best_eval + aspiration_window
+        else:
+            alpha = float('-inf')
+            beta = float('inf')
+
         for move in board.legal_moves:
             board.push(move)
-            eval_score = alphabeta(board, current_depth - 1, alpha=float('-inf'), beta=float('inf'), maximizing_player=False)
+            eval_score = alphabeta(board, current_depth - 1, alpha, beta, maximizing_player=False)
             board.pop()
             if eval_score > best_eval:
                 best_eval = eval_score
@@ -354,7 +358,7 @@ def play_chess(depth):
 
 
 # Example usage
-depth = 4  # Specify the desired depth for the AI
+depth = 2  # Specify the desired depth for the AI
 
 # Play as White
 play_as_white(depth)
