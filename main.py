@@ -188,7 +188,7 @@ def determine_best_move(board_state, depth):
     return best_move.uci()
 
 
-def on_square_click(square):
+def on_square_click(square, root):
     global selected_square
     if selected_square is None:
         selected_square = square
@@ -197,16 +197,22 @@ def on_square_click(square):
         if move in board.legal_moves:
             board.push(move)
             refresh_board()
+            root.update()  # Update the GUI to display the player's move
             selected_square = None
             if player_color == chess.WHITE:
                 make_ai_move()
+                refresh_board()  # Refresh the board after the AI's move
+                root.update()  # Update the GUI to display the AI's move
             else:
                 refresh_board()  # Refresh the board to update the player's move
+                root.update()  # Update the GUI to display the player's move
                 make_ai_move()  # Make AI move after player's move
-                refresh_board()  # Refresh the board after opponent's move
+                refresh_board()  # Refresh the board after the AI's move
+                root.update()  # Update the GUI to display the AI's move
         else:
             messagebox.showinfo("Invalid Move", "Invalid move. Please try again.")
             selected_square = None
+
 
 def refresh_board():
     for square, button in board_buttons.items():
@@ -255,10 +261,10 @@ def create_board_ui(root):
         for col in range(8):
             square = chess.square(col, 7 - row)
             if player_color == chess.WHITE:
-                button = tk.Button(board_frame, width=5, height=2, command=lambda sq=square: on_square_click(sq))
+                button = tk.Button(board_frame, width=5, height=2, command=lambda sq=square: on_square_click(sq, root))
             else:
                 button = tk.Button(board_frame, width=5, height=2, command=lambda sq=square: on_square_click(
-                    chess.square(chess.square_file(sq), 7 - chess.square_rank(sq))))
+                    chess.square(chess.square_file(sq), 7 - chess.square_rank(sq)), root))
             button.grid(row=row, column=col)
             board_buttons[square] = button
 
@@ -412,13 +418,9 @@ def play_chess(depth):
 
 
 # Example usage
-depth = 2  # Specify the desired depth for the AI
+depth = 2 # Specify the desired depth for the AI
 
-# Play as White
-play_as_white(depth)
 
-# Play as Black
-play_as_black(depth)
-
-# Play with random color
+#play_as_white(depth)
+#play_as_black(depth)
 play_random_color(depth)

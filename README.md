@@ -34,10 +34,6 @@ print("Best move:", best_move)
 
 TODO:
 
-Algorithmic: add parallelization and improve late move reduction
+Algorithmic: add parallelization and improve late move reduction, test determine_best_move
 
-UI: add piece icons, flip king/queen when user plays black
-
-UX: refresh board before AI move, fix termination criteria
-
-External: test determine_best_move, general refactoring
+GUI: add piece icons, flip king/queen when user plays black, fix termination criteria
