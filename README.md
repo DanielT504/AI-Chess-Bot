@@ -1,3 +1,9 @@
 # AI-Chess-Bot
 
-TODO: better board UI, flip king/queen when user plays black, fix termination criteria, refresh board before AI move
+TODO:
+
+Algorithmic: parallelization and late move reduction
+
+Asthetic: better board UI, flip king/queen when user plays black
+
+Active: refresh board before AI move, fix termination criteria,
