@@ -252,7 +252,9 @@ def find_best_move(board, depth, aspiration_window=100):
             alpha = float('-inf')
             beta = float('inf')
 
-        for move in board.legal_moves:
+        ordered_moves = order_moves(board.legal_moves)  # Order the moves
+
+        for move in ordered_moves:
             board.push(move)
             eval_score = alphabeta(board, current_depth - 1, alpha, beta, maximizing_player=False)
             board.pop()
@@ -261,6 +263,28 @@ def find_best_move(board, depth, aspiration_window=100):
                 best_move = move
 
     return best_move
+
+def order_moves(moves):
+    ordered_moves = []
+
+    # Capture moves
+    capture_moves = [move for move in moves if board.is_capture(move)]
+    ordered_moves.extend(capture_moves)
+
+    # Promotion moves
+    promotion_moves = [move for move in moves if move.promotion]
+    ordered_moves.extend(promotion_moves)
+
+    # Check moves
+    check_moves = [move for move in moves if board.is_check()]
+    ordered_moves.extend(check_moves)
+
+    # Non-capture and non-promotion moves
+    non_capture_moves = [move for move in moves if move not in capture_moves and move not in promotion_moves]
+    ordered_moves.extend(non_capture_moves)
+
+    return ordered_moves
+
 
 def play_as_white(depth):
     global board, player_color
