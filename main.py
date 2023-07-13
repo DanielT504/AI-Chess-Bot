@@ -8,15 +8,17 @@ import pygame
 board_buttons = {}
 selected_square = None
 player_color = None
+highlighted_squares = []
 
 # Board dimensions
 BOARD_WIDTH = BOARD_HEIGHT = 600
 SQUARE_SIZE = BOARD_WIDTH // 8
 
 # Colors
-LIGHT_SQUARE_COLOR = (240, 217, 181)
-DARK_SQUARE_COLOR = (181, 136, 99)
-SELECTED_SQUARE_COLOR = (122, 158, 202)
+LIGHT_SQUARE_COLOR = "#F0D9B5"  # Hexadecimal value for (240, 217, 181)
+DARK_SQUARE_COLOR = "#B58863"  # Hexadecimal value for (181, 136, 99)
+SELECTED_SQUARE_COLOR = "#7A9ECA"  # Hexadecimal value for (122, 158, 202)
+HIGHLIGHT_COLOR = "#00FF00"  # Hexadecimal value for (0, 255, 0)
 
 # Transposition table
 transposition_table = {}
@@ -201,10 +203,10 @@ def on_square_click(square):
             else:
                 refresh_board()  # Refresh the board to update the player's move
                 make_ai_move()  # Make AI move after player's move
+                refresh_board()  # Refresh the board after opponent's move
         else:
             messagebox.showinfo("Invalid Move", "Invalid move. Please try again.")
             selected_square = None
-
 
 def refresh_board():
     for square, button in board_buttons.items():
@@ -216,11 +218,33 @@ def refresh_board():
         piece_symbol = piece.symbol() if piece else ""
         button["text"] = piece_symbol
 
+        button_color = LIGHT_SQUARE_COLOR if (chess.square_file(square) + chess.square_rank(square)) % 2 == 0 else DARK_SQUARE_COLOR
+        if square == selected_square:
+            button_color = SELECTED_SQUARE_COLOR
+        elif square in highlighted_squares:
+            button_color = HIGHLIGHT_COLOR
+
+        button["bg"] = button_color
+
 
 def make_ai_move():
     best_move = find_best_move(board, depth)
+    start_square = best_move.from_square
+    end_square = best_move.to_square
+    highlighted_squares.clear()
+
+    if player_color == chess.WHITE:
+        highlighted_squares.append(start_square)  # Highlight the start square of the AI move
+        highlighted_squares.append(end_square)  # Highlight the end square of the AI move
+    else:
+        flipped_start_square = chess.square(chess.square_file(start_square), 7 - chess.square_rank(start_square))
+        flipped_end_square = chess.square(chess.square_file(end_square), 7 - chess.square_rank(end_square))
+        highlighted_squares.append(flipped_start_square)  # Highlight the flipped start square of the AI move
+        highlighted_squares.append(flipped_end_square)  # Highlight the flipped end square of the AI move
+
     board.push(best_move)
     refresh_board()
+
 
 
 def create_board_ui(root):

@@ -36,7 +36,7 @@ TODO:
 
 Algorithmic: add parallelization and improve late move reduction
 
-UI: better board UI, flip king/queen when user plays black
+UI: add piece icons, flip king/queen when user plays black
 
 UX: refresh board before AI move, fix termination criteria
 
