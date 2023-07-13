@@ -256,7 +256,13 @@ def find_best_move(board, depth, aspiration_window=100):
 
         for move in ordered_moves:
             board.push(move)
-            eval_score = alphabeta(board, current_depth - 1, alpha, beta, maximizing_player=False)
+            if current_depth >= 3 and not board.is_capture(move):
+                reduced_depth = current_depth - 2  # Reduce the depth for late moves
+                eval_score = -alphabeta(board, reduced_depth, -alpha - 1, -alpha, maximizing_player=False)
+                if alpha < eval_score < beta:  # Perform a full search if the reduced search failed high
+                    eval_score = -alphabeta(board, current_depth - 1, -beta, -alpha, maximizing_player=False)
+            else:
+                eval_score = -alphabeta(board, current_depth - 1, -beta, -alpha, maximizing_player=False)
             board.pop()
             if eval_score > best_eval:
                 best_eval = eval_score
