@@ -4,8 +4,9 @@ This AI uses a minimax tree with a specified depth, at which point an evaluation
 
 The AI does not implement advanced chess concepts such as opening books, endgame tables, or position-specific knowledge, and thus plays very passively and has difficulty initiating confrontation. When prompted to react, it can play at novice level depending on the depth specified.
 
+Several improvements have also been implemented, including Alpha-Beta pruning, transposition table enhancements, iterative deepening, quiescence searching, aspiration window searching, move ordering. Late move ordering is also partially functional, and I have plans to parallelize find_best_move to shorten calculations and allow for deeper trees. For clarification see below. 
 
-Several improvements have also been implemented, including Alpha-Beta pruning, transposition table enhancements, iterative deepening, quiescence searching, aspiration window searching, move ordering. Late move ordering is also partially functional, and I have plans to parallelize find_best_move to shorten calculations and allow for deeper trees. For clarification:
+![chess-bot](https://github.com/DanielT504/AI-Chess-Bot/assets/62156098/739c55d3-dd72-46ca-be57-dd1eba5d5dc9)
 
 Alpha-Beta pruning reduces the number of evaluated nodes by eliminating branches that are guaranteed to lead to worse scores.
 
@@ -22,7 +23,7 @@ Move ordering is based on capturing moves, promotion moves, check moves, and non
 Late move reduction reduces the depth of search for non-capturing moves to save computation time, performing a full search only if necessary.
 
 
-To play as white, black, or a random color, comment out the other two calls at the bottom of the file. You can also change the depth of the minimax tree in constants.py, which will improve the opponent performance but exponentially increase the calculation time (recommended no more than 5).
+To play as white, black, or a random color, comment out the other two calls at the bottom of the file. In the same spot, you can also change the depth of the minimax tree in constants.py, which will improve the opponent performance but exponentially increase the calculation time (recommended no more than 5).
 
 If you want to integrate the chess AI into your own project, you can use the `determine_best_move` function to get the AI's best move for a given board state and depth. The board state should be a valid FEN string representing the current board position. For example:
 
