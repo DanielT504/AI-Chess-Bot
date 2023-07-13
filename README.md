@@ -22,7 +22,7 @@ Move ordering is based on capturing moves, promotion moves, check moves, and non
 Late move reduction reduces the depth of search for non-capturing moves to save computation time, performing a full search only if necessary.
 
 
-To play as white, black, or a random color, comment out the other two calls at the bottom of the file. In the same spot you can also change the depth of the minimax tree, which will improve the opponent performance but exponentially increase the calculation time (recommended no more than 5).
+To play as white, black, or a random color, comment out the other two calls at the bottom of the file. You can also change the depth of the minimax tree in constants.py, which will improve the opponent performance but exponentially increase the calculation time (recommended no more than 5).
 
 If you want to integrate the chess AI into your own project, you can use the `determine_best_move` function to get the AI's best move for a given board state and depth. The board state should be a valid FEN string representing the current board position. For example:
 
@@ -34,6 +34,8 @@ print("Best move:", best_move)
 
 TODO:
 
-Algorithmic: add parallelization and improve late move reduction, test determine_best_move
+Algorithmic: add parallelization and improve late move reduction
 
 GUI: add piece icons, flip king/queen when user plays black, fix termination criteria
+
+Code: test determine_best_move, general refactoring
