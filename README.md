@@ -1,4 +1,5 @@
 # AI Chess Bot
+**You can see the 2nd version of my code here: https://github.com/DanielT504/AI-Chess-Bot-2.0
 
 This AI uses a minimax tree with a specified depth, at which point an evaluation function determines a heuristic based on piece weights, material balance, pawn structure, piece mobility, captures, king safety, and threatened pieces.
 
